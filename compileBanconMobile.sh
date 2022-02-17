@@ -169,11 +169,25 @@ done
 
 ################################# Internal Setup & and vars #######################################
 lastPath='/home/juan/devCommands'
-currentPath=$(dirname $0)
+currentPath=""
+
+currentPathDir=$(dirname "$0")
+currentPathPwd=$(pwd)
+
+scriptFileName="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
+scriptFilePath=${currentPathDir%"$filename"}
+
+if [ -z "${scriptFilePath##*.}" ]; then
+  currentPath=$currentPathPwd
+else
+  currentPath="$(cd $currentPathDir; pwd)"
+fi
 
 if [ "$lastPath" != "$currentPath" ]; then 
+    echo "Starting Script Initial Setup..."
     SelfSetup
 fi
+
 ###################################################################################################
 
 ############################### STATIC VARS #####################################
