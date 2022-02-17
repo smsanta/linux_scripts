@@ -26,6 +26,8 @@ ShowHelp(){
   echo ""
   echo "   -h, Show help imformation"
   echo ""
+  echo "   -s, Runs initial setup."
+  echo ""
   echo "   -i <IP:PORT>, Sets the ip where the dev APK is going to connect. Only work for "
   echo "       only IP and port is required 192.168.1.1:8080"
   echo ""
@@ -133,11 +135,14 @@ omnichannelZipNameEnvironment="DEV" #Possible values "DEV | DEV-prd | PRE-PROD |
 cleanBranchChanges=false
 useMavenLocal=false
 
-while getopts "hi:e:p:lr" inArgs
+while getopts "hsi:e:p:lr" inArgs
 do
     case $inArgs in
       h) #Help 
         ShowHelp
+      ;;
+      s) #Run Setup
+          SelfSetup
       ;;
       i) #IP Listening
           ommnichannelLocalIpApplicationListening="http://${OPTARG}"
