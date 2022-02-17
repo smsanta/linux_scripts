@@ -79,7 +79,7 @@ SelfSetup(){
     sed -i "s+lastPath='$lastPath'+lastPath='$currentPath'+g" $0
 
     echo "Self setup is DONE!! Please run me again!"
-    echo "(If something went wrong have can be manually change after.)"
+    echo "(If something went wrong have can be manually change after or rerun this setup by using -s parameter.)"
     echo ""
     exit 0
 }
