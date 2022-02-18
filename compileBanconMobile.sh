@@ -264,7 +264,7 @@ Announce "Var omnichannelZipNamePackage $omnichannelZipNamePackage"
 Announce "Var omnichannelZipNameEnvironment: $omnichannelZipNameEnvironment"
 Announce "Var useMavenLocal: $useMavenLocal"
 Announce "Var cleanBranchChanges: $cleanBranchChanges"
-exit
+
 DrawSeparatorLine
 ####################################################################
 
