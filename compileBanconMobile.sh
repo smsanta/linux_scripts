@@ -5,7 +5,7 @@ scriptVersion=1.0.0
 #This are only variables that must be modified if want to be used on another pc.
 ommnichannelFolder="/opt/work/projects/ar-bancor-omnichannel" # Path to "ar-bancor-omnichannel" project.
 ommnichannelMobileTmpCompileFolder="/opt/work/projects/bancon-mobile" # Path to the temp folder where the APK will be generated.
-ommnichannelDefaultLocalIpApplicationListening="http://192.168.2.7:8088" # Local IP Where our test APK is going to connect if no args.
+ommnichannelDefaultLocalIpApplicationListening="192.168.2.7:8088" # Local IP Where our test APK is going to connect if no args.
 ###################################################################################################
 
 ##################################### Utility Functions ###########################################
@@ -28,8 +28,11 @@ ShowHelp(){
   echo ""
   echo "   -s, Runs initial setup."
   echo ""
-  echo "   -i <IP:PORT>, Sets the ip where the dev APK is going to connect. Only work for "
-  echo "       only IP and port is required 192.168.1.1:8080"
+  echo "   -i <IP:PORT>, Sets the ip where the dev APK is going to connect. Only work for app-debug (-e DEV -p com)"
+  echo "       Supported values are as follows"
+  echo "       Option 1 - IP and port is required > $0 -i 192.168.1.1:8080 <"
+  echo "       Option 2 - If you have dynamic ip it can be auto detected it by indicating it as auto and then networkd interface and port"
+  echo "                  Eg. The value should be submitted with this pattern '<auto>=<interface>=<port>' >> $0 -i auto=eth0=8080"
   echo ""
   echo "   -p <PACKAGE>, Sets the package name to be used as anchor for finding he correct ZIP source generated after builApp.sh"
   echo "       Possible values 'com | ar | (if none match) Argument value '"
@@ -111,6 +114,38 @@ CleanChanges(){
   fi
 }
 
+GetCurrentIpFromInterface(){
+  echo $(ifconfig $1 | awk -F ' *|:' '/inet /{print $3}')
+}
+
+GetApplicationUrlListening(){
+  finalIp=""
+  if echo $1 | grep -q "$autoIpSuffix"; then
+    desiredInterface=""
+    desiredPort=""
+
+    interfaceAndPort="${1##*auto=}"
+
+    interfaces=$(echo $interfaceAndPort | tr "=" " ")
+
+    for interface in $interfaces; do
+      if [ -z "$desiredInterface" ]; then
+        desiredInterface=$interface
+      else
+        desiredPort=$interface
+      fi
+    done
+
+    desiredUrl=$( GetCurrentIpFromInterface $desiredInterface )
+
+    finalIp="$desiredUrl:$desiredPort"
+  else
+    finalIp="$1"
+  fi 
+
+  echo "http://$finalIp"
+}
+
 Announce() {
     echo "################# $1"
 }
@@ -129,11 +164,13 @@ throwError(){
 ###################################################################################################
 
 ############################### Args ##################################### 
-ommnichannelLocalIpApplicationListening=$ommnichannelDefaultLocalIpApplicationListening # Local IP Where the dev APK is going to connect.
+ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "$ommnichannelDefaultLocalIpApplicationListening" ) # Local IP Where the dev APK is going to connect.
+
 omnichannelZipNamePackage="com.technisys.bancor" #Possible values "com | ar | (if none match) Argument value "
 omnichannelZipNameEnvironment="DEV" #Possible values "DEV | DEV-prd | PRE-PROD | PROD | TEST | TEST-prd "
 cleanBranchChanges=false
 useMavenLocal=false
+autoIpSuffix="auto="
 
 while getopts "hsi:e:p:lr" inArgs
 do
@@ -145,7 +182,7 @@ do
           SelfSetup
       ;;
       i) #IP Listening
-          ommnichannelLocalIpApplicationListening="http://${OPTARG}"
+          ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "${OPTARG}" )
       ;;
       p) #ZIP Package
           if [ ${OPTARG} = "com" ]; then
@@ -219,7 +256,7 @@ Announce "Var omnichannelZipNamePackage $omnichannelZipNamePackage"
 Announce "Var omnichannelZipNameEnvironment: $omnichannelZipNameEnvironment"
 Announce "Var useMavenLocal: $useMavenLocal"
 Announce "Var cleanBranchChanges: $cleanBranchChanges"
-
+exit
 DrawSeparatorLine
 ####################################################################
 
