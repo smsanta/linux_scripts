@@ -1,11 +1,11 @@
 #!/bin/bash
-scriptVersion=1.0.0
+scriptVersion=1.1.1
 
 ############################### CRITICAL FOLDERS AND IP SETUP ##################################### 
 #This are only variables that must be modified if want to be used on another pc.
 ommnichannelFolder="/opt/work/projects/ar-bancor-omnichannel" # Path to "ar-bancor-omnichannel" project.
 ommnichannelMobileTmpCompileFolder="/opt/work/projects/bancon-mobile" # Path to the temp folder where the APK will be generated.
-ommnichannelDefaultLocalIpApplicationListening="192.168.2.7:8088" # Local IP Where our test APK is going to connect if no args.
+ommnichannelDefaultLocalIpApplicationListening="192.168.2.90:8088" # Local IP Where our test APK is going to connect if no args.
 ###################################################################################################
 
 ##################################### Utility Functions ###########################################
@@ -62,11 +62,20 @@ SelfSetup(){
     echo "First run, running self setup, you will be ask to setup 3 variables."
     echo "####################################################################"
     echo ""
-    read -p "Tell me the path to ar-bancor-omnichannel project: " projectPath
+    echo "Before start setting things up there is an example of how there variables might look like."
     echo ""
-    read -p "Tell me the path where the temporary mobile project folder will be: " mobilePath
+    echo "1- Tell me the path to ar-bancor-omnichannel project: /opt/work/projects/ar-bancor-omnichannel"
+    echo "2- Tell me the path where the temporary mobile project folder will be: /opt/work/projects/bancon-mobile"
+    echo "3- Tell me your local ip(If you have dynamic ip it can be set with param -i when running the script later on): 192.168.1.10:8080"
+    echo "   (If you have dynamic ip you can set it to auto with the this value instead of an ip (asuming your main network adapter is eth0) ==> auto=eth0=8080)"
     echo ""
-    read -p "Tell me your local ip(If you have dynamic ip it can be set with param -i when running the script later on): " localIp
+    echo "####################################################################"
+    echo ""
+    read -p "1- Tell me the path to ar-bancor-omnichannel project: " projectPath
+    echo ""
+    read -p "2-  Tell me the path where the temporary mobile project folder will be: " mobilePath
+    echo ""
+    read -p "3- Tell me your local ip(If you have dynamic ip it can be set with param -i when running the script later on): " localIp
     echo ""
     echo "####################################################################"
     echo ""
@@ -82,7 +91,7 @@ SelfSetup(){
     sed -i "s+lastPath='$lastPath'+lastPath='$currentPath'+g" $0
 
     echo "Self setup is DONE!! Please run me again!"
-    echo "(If something went wrong have can be manually change after or rerun this setup by using -s parameter.)"
+    echo "(If something went wrong have can be manually change later on or re-run this script by using -s parameter.)"
     echo ""
     exit 0
 }
@@ -120,7 +129,9 @@ GetCurrentIpFromInterface(){
 
 GetApplicationUrlListening(){
   finalIp=""
+  
   if echo $1 | grep -q "$autoIpSuffix"; then
+    
     desiredInterface=""
     desiredPort=""
 
@@ -164,48 +175,47 @@ throwError(){
 ###################################################################################################
 
 ############################### Args ##################################### 
+autoIpSuffix="auto="
 ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "$ommnichannelDefaultLocalIpApplicationListening" ) # Local IP Where the dev APK is going to connect.
-
 omnichannelZipNamePackage="com.technisys.bancor" #Possible values "com | ar | (if none match) Argument value "
 omnichannelZipNameEnvironment="DEV" #Possible values "DEV | DEV-prd | PRE-PROD | PROD | TEST | TEST-prd "
 cleanBranchChanges=false
 useMavenLocal=false
-autoIpSuffix="auto="
 
 while getopts "hsi:e:p:lr" inArgs
 do
-    case $inArgs in
-      h) #Help 
-        ShowHelp
-      ;;
-      s) #Run Setup
-          SelfSetup
-      ;;
-      i) #IP Listening
-          ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "${OPTARG}" )
-      ;;
-      p) #ZIP Package
-          if [ ${OPTARG} = "com" ]; then
-              omnichannelZipNamePackage="com.technisys.bancor"
-          elif [ ${OPTARG} = "ar" ]; then
-              omnichannelZipNamePackage="ar.com.bancor.bancon"
-          else 
-              omnichannelZipNamePackage=${OPTARG}
-          fi
-      ;; 
-      e) #Environment
-          omnichannelZipNameEnvironment=${OPTARG}
-      ;;
-      l)
-        useMavenLocal=true
-      ;;
-      r)
-        cleanBranchChanges=true
-      ;;
-      *)
-        throwError "Invalid Argument provided."
-      ;;
-    esac
+  case $inArgs in
+    h) #Help 
+      ShowHelp
+    ;;
+    s) #Run Setup
+      SelfSetup
+    ;;
+    i) #IP Listening
+      ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "${OPTARG}" )
+    ;;
+    p) #ZIP Package
+      if [ ${OPTARG} = "com" ]; then
+        omnichannelZipNamePackage="com.technisys.bancor"
+      elif [ ${OPTARG} = "ar" ]; then
+        omnichannelZipNamePackage="ar.com.bancor.bancon"
+      else 
+        omnichannelZipNamePackage=${OPTARG}
+      fi
+    ;; 
+    e) #Environment
+      omnichannelZipNameEnvironment=${OPTARG}
+    ;;
+    l)
+      useMavenLocal=true
+    ;;
+    r)
+      cleanBranchChanges=true
+    ;;
+    *)
+      throwError "Invalid Argument provided."
+    ;;
+  esac
 done
 ####################################################################
 
