@@ -1,5 +1,5 @@
 #!/bin/bash
-scriptVersion=1.1.1
+scriptVersion=1.1.2
 
 ############################### CRITICAL FOLDERS AND IP SETUP ##################################### 
 #This are only variables that must be modified if want to be used on another pc.
@@ -97,7 +97,6 @@ SelfSetup(){
 }
 
 CleanChanges(){
-  if [ "$cleanBranchChanges" = true ] ; then
     while true; do
       echo ""
       echo ""
@@ -120,7 +119,6 @@ CleanChanges(){
         ;;
       esac
     done
-  fi
 }
 
 GetCurrentIpFromInterface(){
@@ -350,7 +348,9 @@ if [ -d $ommnichannelMobileTmpAppApkFolder ]; then
     nautilus . &
   fi
 
-  CleanChanges
+  if [ "$cleanBranchChanges" = true ]; then
+    CleanChanges
+  fi
 else
   throwError "The APK Folder does not exist. There must be a problem with the APK generation."
 fi
