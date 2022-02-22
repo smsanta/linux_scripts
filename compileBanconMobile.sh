@@ -8,12 +8,24 @@ ommnichannelMobileTmpCompileFolder="/opt/work/projects/bancon-mobile" # Path to 
 ommnichannelDefaultLocalIpApplicationListening="192.168.2.90:8088" # Local IP Where our test APK is going to connect if no args.
 ###################################################################################################
 
+############################### STATIC VARS #####################################
+#Subfolders locations
+ommnichannelMobileFolder=$ommnichannelFolder"/mobile/phonegapGenerator"
+ommnichannelCompiledMobileFolder=$ommnichannelMobileFolder"/_zip_to_build"
+ommnichannelUnzipedMobileSourcesFolder=$ommnichannelCompiledMobileFolder"/app"
+ommnichannelMobileTmpAppCompileFolder=$ommnichannelMobileTmpCompileFolder"/app"
+ommnichannelMobileTmpAppBuildGradleFile=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/build.gradle"
+ommnichannelMobileTmpAppApkFolder=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/app/build/outputs/apk/debug"
+ommnichannelDefaultSourceLocalIpApplicationListening="http://192.168.0.108:8080" #This ip must match with the one in the sources (This m8 never be changed)
+autoIpSuffix="auto="
+####################################################################
+
 ##################################### Utility Functions ###########################################
 ShowHelp(){
   echo ""
   echo "Script for bulding bancon mobile APK - Version: $scriptVersion"
   echo ""
-  echo "This script need to have configures 3 main variables that have to be adjusted"
+  echo "This script need to have configured 3 main variables that have to be adjusted"
   echo "The first time it runs will promt to setup those variables"
   echo "By default the script is set to generate the local testing DEV version"
   echo "Eg. Executing this script without parameter implicit equals to: "
@@ -24,7 +36,7 @@ ShowHelp(){
   echo ""
   echo "Arguments" 
   echo ""
-  echo "   -h, Show help imformation"
+  echo "   -h, Show help information"
   echo ""
   echo "   -s, Runs initial setup."
   echo ""
@@ -173,7 +185,6 @@ throwError(){
 ###################################################################################################
 
 ############################### Args ##################################### 
-autoIpSuffix="auto="
 ommnichannelLocalIpApplicationListening=$( GetApplicationUrlListening "$ommnichannelDefaultLocalIpApplicationListening" ) # Local IP Where the dev APK is going to connect.
 omnichannelZipNamePackage="com.technisys.bancor" #Possible values "com | ar | (if none match) Argument value "
 omnichannelZipNameEnvironment="DEV" #Possible values "DEV | DEV-prd | PRE-PROD | PROD | TEST | TEST-prd "
@@ -240,17 +251,6 @@ fi
 
 ###################################################################################################
 
-############################### STATIC VARS #####################################
-#Subfolders locations
-ommnichannelMobileFolder=$ommnichannelFolder"/mobile/phonegapGenerator"
-ommnichannelCompiledMobileFolder=$ommnichannelMobileFolder"/_zip_to_build"
-ommnichannelUnzipedMobileSourcesFolder=$ommnichannelCompiledMobileFolder"/app"
-ommnichannelMobileTmpAppCompileFolder=$ommnichannelMobileTmpCompileFolder"/app"
-ommnichannelMobileTmpAppBuildGradleFile=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/build.gradle"
-ommnichannelMobileTmpAppApkFolder=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/app/build/outputs/apk/debug"
-ommnichannelDefaultSourceLocalIpApplicationListening="http://192.168.0.108:8080" #This ip must match with the one in the sources (This m8 never be changed)
-####################################################################
-
 ############################### SHOW VARS #####################################
 DrawSeparatorLine
 Announce "Omnichannel Mobile compiler data"
@@ -264,7 +264,6 @@ Announce "Var omnichannelZipNamePackage $omnichannelZipNamePackage"
 Announce "Var omnichannelZipNameEnvironment: $omnichannelZipNameEnvironment"
 Announce "Var useMavenLocal: $useMavenLocal"
 Announce "Var cleanBranchChanges: $cleanBranchChanges"
-
 DrawSeparatorLine
 ####################################################################
 
