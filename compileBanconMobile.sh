@@ -121,6 +121,7 @@ CleanChanges(){
         [Yy]*)
           rm $ommnichannelCompiledMobileFolder -R
           git reset HEAD --hard 
+          git clean -rf
           break
         ;;
         [Nn]*) 
