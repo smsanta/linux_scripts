@@ -121,7 +121,7 @@ CleanChanges(){
         [Yy]*)
           rm $ommnichannelCompiledMobileFolder -R
           git reset HEAD --hard 
-          git clean -rf
+          git clean -f -d
           break
         ;;
         [Nn]*) 
@@ -316,9 +316,25 @@ DrawSeparatorLine
 ####################################################################
 
 ############################## COMPILE CORDOVA APP ######################################
-Announce "Adding cordova platform to sources."
+
 cd $ommnichannelMobileTmpAppCompileFolder
-cordova platform add android@9.0.0
+
+Announce "Setting node to version 14.3.0"
+#Source nvm for shell script.
+. ~/.nvm/nvm.sh
+. ~/.profile
+. ~/.bashrc
+
+nvm use 14.3.0
+
+Announce "Check NPM Version (Should be 6.14.5)"
+npm -v 
+
+Announce "Installing cordova@9.0.0"
+npm install cordova@9.0.0
+
+Announce "Adding cordova platform to sources."
+npx cordova platform add android@9.0.0
 
 Announce "Finished Cordova platform add."
 DrawSeparatorLine
@@ -330,7 +346,7 @@ if [ "$useMavenLocal" = true ]; then
   sed -i '/jcenter.*/a mavenLocal()' $ommnichannelMobileTmpAppBuildGradleFile
 fi
 
-cordova build android
+npx cordova build android
 Announce "Finished Cordova build andorid."
 DrawSeparatorLine
 
