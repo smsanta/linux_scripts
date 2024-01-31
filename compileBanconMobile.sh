@@ -16,6 +16,9 @@ ommnichannelUnzipedMobileSourcesFolder=$ommnichannelCompiledMobileFolder"/app"
 ommnichannelMobileTmpAppCompileFolder=$ommnichannelMobileTmpCompileFolder"/app"
 ommnichannelMobileTmpAppBuildGradleFile=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/build.gradle"
 ommnichannelMobileTmpAppApkFolder=$ommnichannelMobileTmpAppCompileFolder"/platforms/android/app/build/outputs/apk/debug"
+ommnichannelMobileApkFileName="app-debug.apk"
+ommnichannelMobileApkFile=$ommnichannelMobileTmpAppApkFolder"/"$ommnichannelMobileApkFileName
+
 ommnichannelDefaultSourceLocalIpApplicationListening="http://192.168.0.108:8080" #This ip must match with the one in the sources (This m8 never be changed)
 autoIpSuffix="auto="
 ####################################################################
@@ -318,6 +321,7 @@ DrawSeparatorLine
 ############################## COMPILE CORDOVA APP ######################################
 
 cd $ommnichannelMobileTmpAppCompileFolder
+Announce "cd $ommnichannelMobileTmpAppCompileFolder"
 
 Announce "Setting node to version 14.3.0"
 #Source nvm for shell script.
@@ -325,10 +329,10 @@ Announce "Setting node to version 14.3.0"
 . ~/.profile
 . ~/.bashrc
 
-nvm use 14.3.0
+nvm use 14.15.3
 
-Announce "Check NPM Version (Should be 6.14.5)"
-npm -v 
+Announce "Check NPM Version (Should be 6.14.9)"
+npm -v
 
 Announce "Installing cordova@9.0.0"
 npm install cordova@9.0.0
@@ -353,21 +357,12 @@ DrawSeparatorLine
 Announce "Finished - Android APK should be created."
 DrawSeparatorLine
 
-if [ -d $ommnichannelMobileTmpAppApkFolder ]; then
-  Announce "Opening APK folder - $ommnichannelMobileTmpAppApkFolder"
-
-  cd $ommnichannelMobileTmpAppApkFolder
-
-  if grep -q Microsoft /proc/version; then
-    explorer.exe .
-  else
-    nautilus . &
-  fi
-
-  if [ "$cleanBranchChanges" = true ]; then
-    CleanChanges
-  fi
+if [ -f $ommnichannelMobileApkFile ]; then
+  echo "Moving APK file to desktop."
+  notify-send "Evolutive APK generation SUCCESS." "APK is now in the Desktop."
+  mv $ommnichannelMobileApkFile ~/Desktop
 else
-  throwError "The APK Folder does not exist. There must be a problem with the APK generation."
+  echo "APK Generation failed?"
+  notify-send "Evolutive APK generation FAILED."
 fi
 ####################################################################

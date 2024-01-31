@@ -6,13 +6,13 @@ redisenoMobileApkFolder=$redisenoMobileAndroidPlatformFolder"/app/build/outputs/
 redisenoMobileApkFile=$redisenoMobileApkFolder"/"$redisenoMobileApkFileName
 
 echo "Sitting on project folder"
-cd /opt/work/projects/ar-bancor-rediseno
+cd $redisenoFolder
 
 #Force delete platform folder if needed.
-if [ "$1" = "d" ]; then
-  echo "Deleting android platform folder"
-  rm $redisenoMobileAndroidPlatformFolder -R
-fi
+#if [ "$1" = "d" ]; then
+#  echo "Deleting android platform folder"
+#  rm $redisenoMobileAndroidPlatformFolder -R
+#fi
 
 echo "Starting compile app"
 npx lerna exec --scope=@app/bancon-cordova -- npm run android:build
