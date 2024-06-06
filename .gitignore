@@ -2,3 +2,4 @@ gitToken*
 sshSafeway.sh
 sshWas.sh
 *.json
+/build

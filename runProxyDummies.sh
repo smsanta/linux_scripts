@@ -15,4 +15,6 @@ fi
 
 echo "Launching Proxy Dummies."
 sleep 1
+##export JAVA_HOME=${SDKMAN_CANDIDATES_DIR}/java/${CURRENT}/bin
+echo "Home> $JAVA_HOME"
 sh /opt/work/apache-tomcat-8.5.71-pd/bin/catalina.sh run

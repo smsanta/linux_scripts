@@ -1,6 +1,6 @@
 #/opt/work/projects/ar-bancor-rediseno/@app/bancon-cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
 redisenoFolder="/opt/work/projects/ar-bancor-rediseno"
-mobileAppDestinyFolder="/home/juan/Desktop"
+mobileAppDestinyFolder="/home/jsantacruz/Desktop"
 redisenoMobileApkFileName="app-debug.apk"
 redisenoMobileBackupApkFileName="app-debug-ftw.apk"
 redisenoMobileFolder=$redisenoFolder"/@app/bancon-cordova"
