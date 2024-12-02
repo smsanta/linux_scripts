@@ -1,4 +1,4 @@
-#/opt/work/projects/ar-bancor-rediseno/@app/bancon-cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+################################## VARS ##################################### 
 redisenoFolder="/opt/work/projects/ar-bancor-rediseno"
 mobileAppDestinyFolder="/home/jsantacruz/Desktop"
 redisenoMobileApkFileName="app-debug.apk"
@@ -9,6 +9,28 @@ redisenoMobileApkFolder=$redisenoMobileAndroidPlatformFolder"/app/build/outputs/
 redisenoMobileApkFile=$redisenoMobileApkFolder"/"$redisenoMobileApkFileName
 redisenoMobileApkDestinyFile=$mobileAppDestinyFolder"/"$redisenoMobileApkFileName
 redisenoMobileApkBackupDestinyFile=$mobileAppDestinyFolder"/"$redisenoMobileBackupApkFileName
+#############################################################################
+################################## OPTS #####################################
+uploadToOptimus=false
+# getopts 
+# single character a-z means input flag
+# character + : 
+#  means it should have and input parameter data read from ${OPTARG}
+while getopts "ui:" inArgs
+do
+  case $inArgs in
+    u) #Reset Project Setup
+      uploadToOptimus=true
+    ;;
+    i) #Assign param ip
+      #placeholder localVar="${OPTARG}"
+    ;;
+    *)
+      echo "No args"
+    ;;
+  esac
+done
+#############################################################################
 
 if [ -f $redisenoMobileApkDestinyFile ]; then
   if [ -f $redisenoMobileApkBackupDestinyFile ]; then
@@ -16,14 +38,20 @@ if [ -f $redisenoMobileApkDestinyFile ]; then
     rm $redisenoMobileApkBackupDestinyFile
   fi
   echo "Creating newer apk backup. ($redisenoMobileApkDestinyFile)"
-  mv $redisenoMobileApkDestinyFile $redisenoMobileApkBackupDestinyFile
+  cp $redisenoMobileApkDestinyFile $redisenoMobileApkBackupDestinyFile
 fi
 
 echo "Moving APK file to desktop."
 
 if [ -f $redisenoMobileApkFile ]; then
   notify-send "Redisenio APK." "APK is now in the Desktop."
-  mv $redisenoMobileApkFile $mobileAppDestinyFolder
+  cp $redisenoMobileApkFile $mobileAppDestinyFolder
+  
+  if [ "$uploadToOptimus" = true ]; then
+    curl --upload-file $redisenoMobileApkDestinyFile  -u 'WORKGROUP\smsanta:mumirs89' smb://192.168.2.1/opt/
+    notify-send "Redisenio APK." "APK is now in Optimus Server."
+  fi
+  
 else
   notify-send "Redisenio APK Error." "APK does not exists."
 fi

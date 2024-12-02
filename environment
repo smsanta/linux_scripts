@@ -1,0 +1,9 @@
+M2_HOME=/usr/share/maven/apache-maven-3.8.4
+#JAVA_HOME=/home/jsantacruz/.sdkman/candidates/java/current
+GEM_HOME=/home/jsantacruz/.rvm/src/ruby-2.7.0
+#ANDROID_CMD_TOOLS=/opt/work/libs/android-cmdline-tools
+ANDROID_CMD_TOOLS=/opt/libs/android/sdk/cmdline-tools/tools
+ANDROID_SDK_ROOT=/opt/libs/android/sdk
+ANDROID_HOME=/opt/libs/android/sdk
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$M2_HOME/bin:$GEM_HOME/bin:$ANDROID_CMD_TOOLS/bin"
