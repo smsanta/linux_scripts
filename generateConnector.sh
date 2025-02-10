@@ -9,9 +9,6 @@ m2Folder="/home/jsantacruz/.m2"
 m2BanconConnectorFolder=$m2Folder"/repository/ar-bancor"
 moveGeneratedConnectorPath="/tmp/connector"
 
-# TODO: Agregar parametro para version (-v), si se agrega una version modificar los archivos xml sino generar directamente
-# TODO: Agregar parametro para unicamente generar JAR y POM y copiarlos en la carpeta local de maven (i)
-
 #############################################################################
 ################################## OPTS #####################################
 runShowHelp=false
