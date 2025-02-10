@@ -1,12 +1,13 @@
 #!/bin/bash
-scriptVersion=1.0.0
+scriptVersion=1.0.1
 
 ################################## VARS ##################################### 
 omnichannelFolder="/opt/work/projects/ar-bancor-rediseno/@app/bancor-omnichannel"
 omnichannelApiPom="$omnichannelFolder/api/pom.xml"
 connectorFolder="$omnichannelFolder/connector"
-m2Folder="~/.m2"
+m2Folder="/home/jsantacruz/.m2"
 m2BanconConnectorFolder=$m2Folder"/repository/ar-bancor"
+moveGeneratedConnectorPath="/tmp/connector"
 
 # TODO: Agregar parametro para version (-v), si se agrega una version modificar los archivos xml sino generar directamente
 # TODO: Agregar parametro para unicamente generar JAR y POM y copiarlos en la carpeta local de maven (i)
@@ -19,15 +20,17 @@ connectorName=""
 promptConnectorName=true
 connectorTargetVersion=""
 cleanBranchChanges=false
+addConnectorTolocalMaven=false
+moveGeneratedConnector=false
 
 # getopts 
 # single character a-z means input flag
 # character + : 
 #  means it should have and input parameter data read from ${OPTARG}
-while getopts "hsrc:v:" inArgs
+while getopts "hHsric:v:mM:" inArgs
 do
   case $inArgs in
-    h)
+    [hH])
       #Help  
       runShowHelp=true
     ;;
@@ -50,10 +53,18 @@ do
     ;;
     i)
       #Internal - Add depencies to local maven 
-      #Implement
+      addConnectorTolocalMaven=true
+    ;;
+    [mM])
+      moveGeneratedConnector=true
+      #Move Generated connector
+      if [ ! -z "${OPTARG}" ]; then
+        moveGeneratedConnectorPath="${OPTARG}"
+      fi
     ;;
     *)
-      ThrowError "Invalid args"
+      echo "Invalid args"
+      exit 1
     ;;
   esac
 done
@@ -179,12 +190,21 @@ ShowHelp(){
   echo "This script need to have configured 2 main variables that have to be set"
   echo "The first time it runs will promt to setup those variables"
   echo "Use examples:"
-  echo "Eg. (If no params are given the program will prompt wich connector and version): "
+  echo "    bash $0 -c transfers"
+  echo "    (If no version is given will generate current version)"
+  echo ""
   echo "    bash $0 -c transfers -v 1.0.99"
   echo "    bash $0 -c transfers -v next" 
   echo "    (if curent version is 1.0.98 will will add one to the min in this eg will be 1.0.99)"
-  echo "    bash $0 -c transfers"
-  echo "    (if no version is given will generate current version)"
+  echo ""
+  echo "    bash $0 -c transfers -v next -i" 
+  echo "    (In this example after generate JAR and POM it will be installed in your local maven)" 
+  echo ""
+  echo "    bash $0 -c transfers -v next -m" 
+  echo "    (In this example after generate JAR and POM it will copied to a default location ($moveGeneratedConnectorPath)"
+  echo "    bash $0 -c transfers -v next -M /home/myuser/Desktop" 
+  echo "    (In this example after generate JAR and POM it will copied to the given path)" 
+  echo ""
   echo "    bash $0"
   echo "    (Prompts will start)"
   echo ""
@@ -206,9 +226,13 @@ ShowHelp(){
   echo "        - next: will look for current version and add one to the min version eg 1.0.10 will generate 1.0.11"
   echo "        - x.x.x: Any version like number 1.1.0"
   echo ""
-  echo "   -i, After generate the .jar and .pom it will be installed in your local maven automatically."
+  echo "   -i, Installs the generated .jar and .pom in your local maven automatically."
   echo ""
-  
+  echo "   -m, Moves the generated connector to default folder: $moveGeneratedConnectorPath."
+  echo ""
+  echo "   -M, <PATH> Moves the generated connector to the given folder."
+  echo ""
+
   EXIT
 }
 #############################################################################
@@ -275,8 +299,7 @@ GetXmlTagValue() {
   local tag_name="$2"
 
   if [[ ! -f "$xml_file" ]]; then
-    echo "Error: XML file '$xml_file' not found or not readable." >&2
-    return 1
+    ThrowError "Error: XML file '$xml_file' not found or not readable."
   fi
 
   # Read the XML file line by line
@@ -284,13 +307,22 @@ GetXmlTagValue() {
     # Find the opening tag
     openingTag="<${tag_name}>"
     if [[ "$line" == *"${openingTag}"* ]]; then
-      #echo $line
       # Extract the value (assuming it's on the same line)
       value=$(echo "$line" | sed "s/$openingTag//g") # Remove tags
       value=$(echo "$value" | sed 's/<\/*.*>//g') # Remove closing tags
       echo "$value"
     fi
   done < "$xml_file"
+}
+
+#Creates a tree file path and subfolders if not exists.
+CreatePath() {
+  local path="$1"
+  # Check if the path exists
+  if [ ! -d "$path" ]; then
+    # Create the path recursively
+    mkdir -p "$path"
+  fi
 }
 #############################################################################
 ######################## IMPLEMENTATION FUNCTIONS ###########################
@@ -303,15 +335,24 @@ BuildTargetConnectorGenerateRbFilePath(){
 }
 
 BuildMavenTargetConnectorPath(){
-  echo "$m2BanconConnectorFolder/ar-bancor-esb-$connectorName-connector"
+  local version=""
+  if [ ! -z "$1" ]; then
+    version="$1"
+  fi
+  echo "$m2BanconConnectorFolder/$(BuildConnectorStoreFolder $version)"
+}
+
+BuildConnectorStoreFolder(){
+  local version=""
+  if [ ! -z "$1" ]; then
+    version="/$1"
+  fi
+  echo "ar-bancor-esb-$connectorName-connector$version"
 }
 
 UpdateConnectorRbVersion(){
   currentRbVersion="name=\"version\" value=\"$(GetConnectorCurrentVersion)\""
   newRbVersion="name=\"version\" value=\"$connectorTargetVersion\""
-  echo $currentRbVersion
-  echo $newRbVersion
-  echo "$(BuildTargetConnectorGenerateRbFilePath)"
   sed -i "s+$currentRbVersion+$newRbVersion+g" "$(BuildTargetConnectorGenerateRbFilePath)"
 }
 
@@ -372,6 +413,20 @@ IsValidConnector(){
   
   return $(FALSE);
 }
+
+GetGeneratedConnectorJARFilePath(){
+  local version="$1"
+  local connectorPath="$(BuildTargetConnectorPath)"
+  local jarFileName="ar-bancor-esb-$connectorName-connector-$version.jar"
+  echo "$connectorPath/$jarFileName"
+}
+
+GetGeneratedConnectorPOMFilePath(){
+  local version="$1"
+  local connectorPath="$(BuildTargetConnectorPath)"
+  local pomFileName="ar-bancor-esb-$connectorName-connector-$version.pom"
+  echo "$connectorPath/$pomFileName"
+}
 #############################################################################
 ########################## SCRIPT INITIALIZATION ############################
 if $runShowHelp; then 
@@ -408,35 +463,57 @@ fi
 #Start
 cd $connectorTarget
 
-#Step 1
+#Step 0.1
 if [ ! -z $connectorTargetVersion ]; then
   UpdateConnectorRbVersion  
 fi
 
-
-#Step 2
+#Step 1
 ruby generate.rb
 DrawSeparatorLine
 
-#Step 3
+#Step 2
 ant -f generate.xml all
 DrawSeparatorLine
 
-#Step 4
+#Step 3
 cd ..
 ruby unify-wsdl.rb 
 DrawSeparatorLine
 
-#Step 5
+#Step 4
 if [ ! -z $connectorTargetVersion ]; then
   UpdateConnectorPomVersion
 fi
 
-#End
 connectorFinalVersion=$connectorCurrentVersion
 if [ ! -z $connectorTargetVersion ]; then
   connectorFinalVersion=$connectorTargetVersion
 fi
+
+generatedConnectorJARFilePath="$(GetGeneratedConnectorJARFilePath $connectorFinalVersion)"
+generatedConnectorPOMFilePath="$(GetGeneratedConnectorPOMFilePath $connectorFinalVersion)"
+
+#Optional Step 6 - Install to local maven folder
+if $addConnectorTolocalMaven; then
+  echo "Connector maven"
+  localMavenConnectorPath=$(BuildMavenTargetConnectorPath $connectorFinalVersion)
+  CreatePath $localMavenConnectorPath
+  cp $generatedConnectorJARFilePath $localMavenConnectorPath
+  cp $generatedConnectorPOMFilePath $localMavenConnectorPath
+  echo "Connector is now installed in $localMavenConnectorPath"
+fi
+
+#Optional Step 7 - Move jar and pom to specific folder
+if $moveGeneratedConnector; then
+  moveGeneratedConnectorFinalPath="$moveGeneratedConnectorPath/$(BuildConnectorStoreFolder $connectorFinalVersion)"
+  CreatePath $moveGeneratedConnectorFinalPath
+  cp $generatedConnectorJARFilePath $moveGeneratedConnectorFinalPath
+  cp $generatedConnectorPOMFilePath $moveGeneratedConnectorFinalPath
+  echo "Connector JAR and POM is now in folder $moveGeneratedConnectorFinalPath"
+fi
+
+#End
 notify-send "Conector generado." "Se completó la generación del connector $connectorName versión $connectorFinalVersion."
 
 #Clean 

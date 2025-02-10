@@ -3,3 +3,4 @@ sshSafeway.sh
 sshWas.sh
 *.json
 /build
+_tests.sh
